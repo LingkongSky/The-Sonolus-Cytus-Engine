@@ -1,0 +1,45 @@
+{
+    "pageCount": 1,
+    "list": [
+        {
+            "title": "Body Talk",
+            "artists": "PAFF",
+            "cover": "www.lingkongsky.top/cy2/textures/pack_icon/body_talk.png",
+            "bgm": "https://cytus2-1302672239.cos.ap-shenzhen-fsi.myqcloud.com/music/Body_talk.mp3",
+            "difficulties": [
+               {
+                    "name": "EASY",
+                    "rating": 1
+               },
+              {
+                    "name": "HARD",
+                    "rating": 8
+               },
+              {
+                    "name": "CHAOS",
+                    "rating": 12
+                }
+            ]
+        },
+        {
+            "title": "test2",
+            "artists": "ACR",
+            "cover": "www.lingkongsky.top/cy2/textures/pack_icon/paff.png",
+            "bgm": "https://cytus2-1302672239.cos.ap-shenzhen-fsi.myqcloud.com/music/Body_talk.mp3",
+            "difficulties": [
+               {
+                    "name": "easy",
+                    "rating": 1
+               },
+              {
+                    "name": "normal",
+                    "rating": 4
+               },
+              {
+                    "name": "hard",
+                    "rating": 9
+                }
+            ]
+        }
+    ]
+}

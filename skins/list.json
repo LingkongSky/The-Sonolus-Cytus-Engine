@@ -1,0 +1,15 @@
+{
+    "pageCount": 1,
+    "list": [
+        {
+            "name": "cytus",
+            "title": "the first type",
+            "subtitle": "default"
+        },
+        {
+            "name": "cytus",
+            "title": "the second type",
+            "subtitle": "default"
+        }
+    ]
+}

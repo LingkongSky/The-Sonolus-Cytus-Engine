@@ -1,0 +1,24 @@
+{
+    "clips": [
+        {
+            "id": 1,
+            "name": "perfect.mp3"
+        },
+        {
+            "id": 2,
+            "name": "great.mp3"
+        },
+        {
+            "id": 3,
+            "name": "good.mp3"
+        },
+        {
+            "id": 4,
+            "name": "flick.mp3"
+        },
+        {
+            "id": 5,
+            "name": "empty.mp3"
+        }
+    ]
+}

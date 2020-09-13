@@ -1,0 +1,36 @@
+[
+    {
+        "name": "#NOTE_SPEED",
+        "standard": false,
+        "scope": "cytus2",
+        "type": "slider",
+        "def": 6,
+        "min": 1,
+        "max": 12,
+        "step": 1,
+        "display": "number"
+    },
+    {
+        "name": "#STAGE_TILT",
+        "scope": "cytus2",
+        "type": "toggle",
+        "def": 1
+    },
+   {
+        "name": "#UI_JUDGMENT_SIZE",
+        "standard": "false",
+        "scope": "cytus2",
+        "type": "slide",
+        "def": 5,
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "display": "number"
+      },
+     {
+        "name": "#AUTO",
+        "scope": "cytus2",
+        "type": "toggle",
+        "def": 1
+     }
+]
