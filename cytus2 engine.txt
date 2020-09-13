@@ -1,0 +1,369 @@
+//Sonolus Cytus2 engine by sky_yousila
+
+#0.preprocess:Execute(
+
+//退出按钮
+SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
+    SetShifted(LevelUI *UIMenu *UIAnchorY 0.8)
+    SetShifted(LevelUI *UIMenu *UIPivotX 0.0)
+    SetShifted(LevelUI *UIMenu *UIPivotY 0.0)
+    SetShifted(LevelUI *UIMenu *UIWidth 0.15)
+    SetShifted(LevelUI *UIMenu *UIHeight 0.15)
+    SetShifted(LevelUI *UIMenu *UIAlpha 0.6)
+    SetShifted(LevelUI *UIMenu *UIBackground false)
+
+
+//判定效果
+    SetShifted(LevelUI *UIJudgment *UIAnchorX 0)
+    SetShifted(LevelUI *UIJudgment *UIAnchorY 0)
+    SetShifted(LevelUI *UIJudgment *UIPivotX 0.0)
+    SetShifted(LevelUI *UIJudgment *UIPivotY 0.0)
+    SetShifted(LevelUI *UIJudgment *UIWidth 0.6)
+    SetShifted(LevelUI *UIJudgment *UIHeight 0.2)
+    SetShifted(LevelUI *UIJudgment *UIAlpha 1)
+
+
+//节奏数
+    SetShifted(LevelUI *UIComboValue *UIAnchorX 0)
+    SetShifted(LevelUI *UIComboValue *UIAnchorY 0.92)
+    SetShifted(LevelUI *UIComboValue *UIPivotX 0.5)
+    SetShifted(LevelUI *UIComboValue *UIPivotY 0.5)
+    SetShifted(LevelUI *UIComboValue *UIWidth 0.3)
+    SetShifted(LevelUI *UIComboValue *UIHeight 0.15)
+    SetShifted(LevelUI *UIComboValue *UIAlpha 0.9)
+    SetShifted(LevelUI *UIComboValue *UIVerticalAlign -1)
+
+//Combo艺术字
+    SetShifted(LevelUI *UIComboText *UIAnchorX 1000)
+    SetShifted(LevelUI *UIComboText *UIAnchorY 0)
+    SetShifted(LevelUI *UIComboText *UIPivotX 0)
+    SetShifted(LevelUI *UIComboText *UIPivotY 0)
+    SetShifted(LevelUI *UIComboText *UIWidth 0.45)
+    SetShifted(LevelUI *UIComboText *UIHeight 0.15)
+    SetShifted(LevelUI *UIComboText *UIAlpha 1)
+    SetShifted(LevelUI *UIComboText *UIVerticalAlign 1)
+
+
+//进度条
+    SetShifted(LevelUI *UIScoreBar *UIAnchorX Subtract(-0.05 AspectRatio))
+    SetShifted(LevelUI *UIScoreBar *UIAnchorY 0.97)
+    SetShifted(LevelUI *UIScoreBar *UIPivotX 10)
+    SetShifted(LevelUI *UIScoreBar *UIPivotY 0)
+    SetShifted(LevelUI *UIScoreBar *UIWidth 2)
+    SetShifted(LevelUI *UIScoreBar *UIHeight 1)
+    SetShifted(LevelUI *UIScoreBar *UIAlpha 0.5)
+    SetShifted(LevelUI *UIScoreBar *UIHorizontalAlign -1)
+    SetShifted(LevelUI *UIScoreBar *UIBackground false)
+
+//分数
+    SetShifted(LevelUI *UIScoreValue *UIAnchorX Subtract(AspectRatio 0.2))
+    SetShifted(LevelUI *UIScoreValue *UIAnchorY 0.85)
+    SetShifted(LevelUI *UIScoreValue *UIPivotX 0.5)
+    SetShifted(LevelUI *UIScoreValue *UIPivotY 0.5)
+    SetShifted(LevelUI *UIScoreValue *UIWidth 0.6)
+    SetShifted(LevelUI *UIScoreValue *UIHeight 0.2)
+    SetShifted(LevelUI *UIScoreValue *UIAlpha 1)
+    SetShifted(LevelUI *UIScoreValue *UIHorizontalAlign -1)
+
+
+//退出按钮
+
+   Set(LevelMemory *NoteScreenTime Divide(5 NoteSpeed))
+    Set(LevelMemory *ScreenX1 Multiply(AspectRatio -1))
+    Set(LevelMemory *ScreenX2 Multiply(AspectRatio 1))
+
+     true
+)
+
+////////////
+
+#1.shouldSpawn:Equal(Get(EntityInfoArray *State) Despawned)
+
+
+//点击事件
+#1.touch@1:Execute(
+
+    Set(EntityMemory *JudgeLineAlpha 1)
+    
+And(
+        TempTouchStarted
+        Not(TempTouchOccupied)
+        Play(ClipEmpty MinEffectTime)
+    )
+)
+
+#1.updateParallel:Execute(
+//判断线绘制
+
+If(
+Less(Mod(Time 2) 1)
+Set(EntityMemory *JudgeLinePosition Multiply(Add(Multiply(Mod(Time 2) 2) -1) 0.8)  )
+Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2)) 0.8)))
+
+
+    Draw(
+        TextureJudgeLine
+        ScreenX1 Add(0.02 JudgeLinePosition)
+        ScreenX1 Add(-0.02 JudgeLinePosition)
+        ScreenX2 Add(-0.02 JudgeLinePosition)
+        ScreenX2 Add(0.02 JudgeLinePosition)
+
+        0
+        JudgeLineAlpha
+    )
+
+    Set(EntityMemory *JudgeLineAlpha 0.7)
+)
+
+#2.shouldSpawn:LessOr(Subtract(NoteTime Time) NoteScreenTime)
+
+#2.touch:And(
+    Not(InputState)
+
+    LessOr(Subtract(NoteTime Subtract(Time DeviceInputOffset)) GoodWindow)
+
+    TempTouchStarted
+
+    Not(TempTouchOccupied)
+   
+    Execute(
+       
+        Set(TemporaryMemory *TempTouchOccupied true)
+   
+        Set(EntityMemory *InputState Terminated)
+
+         Set(EntityMemory *NoteTime1 )
+
+//判断线触控区绘制
+        Set(EntityInput *Judgment JudgeSimple(Subtract(TempTouchST DeviceInputOffset) NoteTime1 PerfectWindow GreatWindow GoodWindow))
+
+        Set(EntityInput *Bucket 1)
+    
+        Set(EntityInput *BucketValue Multiply(1000 Subtract(TempTouchST DeviceInputOffset NoteTime)))
+       
+        Spawn(3 Time)
+       
+        Play(Judgment MinEffectTime)
+    )
+)
+
+// We draw note here
+// We use Or function here as a shorthand utilizing short circuit evaluation
+#2.updateParallel:Or(
+    // Check if InputState is Terminated
+    // If true then player must have tapped this note, we return true and despawn
+    Equal(InputState Terminated)
+
+    // Check if current time already past furthest GoodWindow
+    // If true then player has already missed this note, we return true and despawn
+    Greater(Subtract(Time DeviceInputOffset NoteTime) GoodWindow)
+
+    // Otherwise we draw the note
+    Execute(
+        // Simple math here to calculate the center Y position of note at current time
+        Set(EntityMemory *NoteY Lerp(-0.6 1.2 Divide(Subtract(NoteTime Time) NoteScreenTime)))
+
+        // We draw it centered at (0, NoteY) with size 0.4
+        // z is set to 2, highest of all Draw calls so that it renders at the top
+//note绘制
+        Draw(
+            TextureNote
+            -0.2 Subtract(NoteY 0.2)
+            -0.2 Add(NoteY 0.2)
+            0.2 Add(NoteY 0.2)
+            0.2 Subtract(NoteY 0.2)
+            2
+            1
+        )
+    )
+)
+
+
+
+// The following code are mostly boilerplate
+// Constants and getter functions so our main code is more readable
+
+// Most of these are specified by Sonolus, and others are user defined
+
+
+
+// Constant
+
+true:1
+false:0
+
+PerfectWindow:0.05
+GreatWindow:0.1
+GoodWindow:0.15
+
+Waiting:0
+Spawned:1
+Despawned:2
+
+Waiting:0
+Terminated:1
+
+MinEffectTime:0.02
+
+
+
+// Texture identifiers
+
+TextureNote:1006
+TextureJudgeLine:41000
+TextureEffectCF:32006
+
+
+
+// Clip identifiers
+
+ClipEmpty:5
+
+
+// Particle Effect identifiers
+
+ParticleEffectTapNormalC:110006
+
+
+// Block identifiers
+
+LevelMemory:0
+LevelData:1
+LevelOption:2
+LevelUI:5
+
+EntityInfoArray:10
+
+EntityMemory:21
+EntityData:22
+EntityInput:23
+
+TemporaryMemory:100
+TemporaryData:101
+
+
+
+// Level Memory Layout
+
+*NoteScreenTime:0
+*ScreenX1:1
+*ScreenX2:2
+
+NoteScreenTime:Get(LevelMemory *NoteScreenTime)
+ScreenX1:Get(LevelMemory *ScreenX1)
+ScreenX2:Get(LevelMemory *ScreenX2)
+
+
+
+// Level Data Layout
+
+*Time:0
+*AspectRatio:2
+*DeviceInputOffset:4
+
+
+Time:Get(LevelData *Time)
+AspectRatio:Get(LevelData *AspectRatio)
+DeviceInputOffset:Get(LevelData *DeviceInputOffset)
+
+
+
+// Level Option Layout
+
+*NoteSpeed:0
+
+NoteSpeed:Get(LevelOption *NoteSpeed)
+
+
+
+// Level UI Layout
+
+*UIMenu:0
+*UIJudgment:11
+*UIComboValue:22
+*UIComboText:33
+*UIScoreBar:44
+*UIScoreValue:55
+
+*UIAnchorX:0
+*UIAnchorY:1
+*UIPivotX:2
+*UIPivotY:3
+*UIWidth:4
+*UIHeight:5
+*UIRotation:6
+*UIAlpha:7
+*UIHorizontalAlign:8
+*UIVerticalAlign:9
+*UIBackground:10
+
+
+
+// Entity Info Layout
+
+*State:2
+
+
+
+// Entity Input Layout
+
+*Judgment:0
+*Bucket:1
+*BucketValue:2
+
+Judgment:Get(EntityInput *Judgment)
+Bucket:Get(EntityInput *Bucket)
+BucketValue:Get(EntityInput *BucketValue)
+
+
+
+// Touch Temporary Memory Layout
+
+*TempTouchOccupied:0
+
+TempTouchOccupied:Get(TemporaryMemory *TempTouchOccupied)
+
+
+
+// Touch Temporary Data Layout
+
+*TempTouchStarted:1
+*TempTouchST:4
+
+TempTouchStarted:Get(TemporaryData *TempTouchStarted)
+TempTouchST:Get(TemporaryData *TempTouchST)
+
+
+
+// #1 Memory Layout
+
+*JudgeLineAlpha:0
+
+JudgeLineAlpha:Get(EntityMemory *JudgeLineAlpha)
+
+
+
+// #2 Data Layout
+
+*NoteTime:0
+
+NoteTime:Get(EntityData *NoteTime)
+
+
+
+// #2 Memory Layout
+
+*NoteY:0
+*InputState:1
+*JudgeLinePosition:2
+*NoteTime1:3
+
+
+JudgeLinePosition:Get(EntityMemory *JudgeLinePosition)
+
+NoteTime1:Get(EntityMemory *NoteTime1)
+
+
+NoteY:Get(EntityMemory *NoteY)
+
+InputState:Get(EntityMemory *InputState)
