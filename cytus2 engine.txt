@@ -2,7 +2,6 @@
 
 #0.preprocess:Execute(
 
-//退出按钮
 SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
     SetShifted(LevelUI *UIMenu *UIAnchorY 0.8)
     SetShifted(LevelUI *UIMenu *UIPivotX 0.0)
@@ -13,7 +12,8 @@ SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
     SetShifted(LevelUI *UIMenu *UIBackground false)
 
 
-//判定效果
+
+   //判定效果
     SetShifted(LevelUI *UIJudgment *UIAnchorX 0)
     SetShifted(LevelUI *UIJudgment *UIAnchorY 0)
     SetShifted(LevelUI *UIJudgment *UIPivotX 0.0)
@@ -33,6 +33,7 @@ SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
     SetShifted(LevelUI *UIComboValue *UIAlpha 0.9)
     SetShifted(LevelUI *UIComboValue *UIVerticalAlign -1)
 
+
 //Combo艺术字
     SetShifted(LevelUI *UIComboText *UIAnchorX 1000)
     SetShifted(LevelUI *UIComboText *UIAnchorY 0)
@@ -43,8 +44,7 @@ SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
     SetShifted(LevelUI *UIComboText *UIAlpha 1)
     SetShifted(LevelUI *UIComboText *UIVerticalAlign 1)
 
-
-//进度条
+    //进度条
     SetShifted(LevelUI *UIScoreBar *UIAnchorX Subtract(-0.05 AspectRatio))
     SetShifted(LevelUI *UIScoreBar *UIAnchorY 0.97)
     SetShifted(LevelUI *UIScoreBar *UIPivotX 10)
@@ -65,39 +65,59 @@ SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
     SetShifted(LevelUI *UIScoreValue *UIAlpha 1)
     SetShifted(LevelUI *UIScoreValue *UIHorizontalAlign -1)
 
+//判定范围
+    Set(LevelBucket 0 -50)
+    Set(LevelBucket 1 50)
+    Set(LevelBucket 2 -100)
+    Set(LevelBucket 3 100)
+    Set(LevelBucket 4 -150)
+    Set(LevelBucket 5 150)
 
-//退出按钮
+//判定分数倍率
+    Set(LevelScore *PerfectScoreMultiplier 1)
+    Set(LevelScore *GreatScoreMultiplier 0.8)
+    Set(LevelScore *GoodScoreMultiplier 0.5)
 
-   Set(LevelMemory *NoteScreenTime Divide(5 NoteSpeed))
+    SetShifted(LevelScore *ConsecutiveGreatScore *ConsecutiveScoreMultiplier 0.1)
+    SetShifted(LevelScore *ConsecutiveGreatScore *ConsecutiveScoreStep 100)
+    SetShifted(LevelScore *ConsecutiveGreatScore *ConsecutiveScoreCap 1000)
+)
+
+
+#0.updateSequential:Execute(
+ 
+    Set(LevelMemory *NoteScreenTime Divide(5 NoteSpeed))
+
     Set(LevelMemory *ScreenX1 Multiply(AspectRatio -1))
     Set(LevelMemory *ScreenX2 Multiply(AspectRatio 1))
 
-     true
+    true
 )
 
-////////////
 
 #1.shouldSpawn:Equal(Get(EntityInfoArray *State) Despawned)
 
-
-//点击事件
 #1.touch@1:Execute(
+ 
+    Set(EntityMemory *JudgeLineAlpha 0.7)
 
-    Set(EntityMemory *JudgeLineAlpha 1)
     
-And(
+    And(
+   
         TempTouchStarted
         Not(TempTouchOccupied)
+
         Play(ClipEmpty MinEffectTime)
     )
 )
 
-#1.updateParallel:Execute(
 //判断线绘制
-
-If(
+#1.updateParallel:Execute(
+    
+   If(
 Less(Mod(Time 2) 1)
 Set(EntityMemory *JudgeLinePosition Multiply(Add(Multiply(Mod(Time 2) 2) -1) 0.8)  )
+
 Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2)) 0.8)))
 
 
@@ -114,10 +134,13 @@ Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2))
 
     Set(EntityMemory *JudgeLineAlpha 0.7)
 )
+ 
+
 
 #2.shouldSpawn:LessOr(Subtract(NoteTime Time) NoteScreenTime)
 
 #2.touch:And(
+   
     Not(InputState)
 
     LessOr(Subtract(NoteTime Subtract(Time DeviceInputOffset)) GoodWindow)
@@ -125,24 +148,32 @@ Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2))
     TempTouchStarted
 
     Not(TempTouchOccupied)
-   
+
     Execute(
-       
+        
         Set(TemporaryMemory *TempTouchOccupied true)
-   
+
         Set(EntityMemory *InputState Terminated)
 
-         Set(EntityMemory *NoteTime1 )
+        Set(EntityInput *Judgment JudgeSimple(Subtract(TempTouchST DeviceInputOffset) NoteTime PerfectWindow GreatWindow GoodWindow))
 
-//判断线触控区绘制
-        Set(EntityInput *Judgment JudgeSimple(Subtract(TempTouchST DeviceInputOffset) NoteTime1 PerfectWindow GreatWindow GoodWindow))
-
+        // We assign this note to the first Bucket
         Set(EntityInput *Bucket 1)
-    
+
         Set(EntityInput *BucketValue Multiply(1000 Subtract(TempTouchST DeviceInputOffset NoteTime)))
-       
-        Spawn(3 Time)
-       
+
+        // We spawn a particle effect
+        SpawnParticleEffect(
+            ParticleEffectTapNormalC
+            -0.4 -1
+            -0.4 -0.2
+            0.4 -0.2
+            0.4 -1
+            0.3
+            0
+        )
+
+        // We play clip of judgment result
         Play(Judgment MinEffectTime)
     )
 )
@@ -158,20 +189,26 @@ Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2))
     // If true then player has already missed this note, we return true and despawn
     Greater(Subtract(Time DeviceInputOffset NoteTime) GoodWindow)
 
-    // Otherwise we draw the note
-    Execute(
-        // Simple math here to calculate the center Y position of note at current time
-        Set(EntityMemory *NoteY Lerp(-0.6 1.2 Divide(Subtract(NoteTime Time) NoteScreenTime)))
 
-        // We draw it centered at (0, NoteY) with size 0.4
-        // z is set to 2, highest of all Draw calls so that it renders at the top
-//note绘制
+    Execute(
+
+        Set(EntityMemory *NoteY 1)
+
+
+   If(
+Less(Mod(Time 2) 1)
+Set(EntityMemory *JudgeLinePosition Multiply(Add(Multiply(Mod(Time 2) 2) -1) 0.8)  )
+
+Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2)) 0.8)))
+
+        // note绘制
+
         Draw(
             TextureNote
-            -0.2 Subtract(NoteY 0.2)
-            -0.2 Add(NoteY 0.2)
-            0.2 Add(NoteY 0.2)
-            0.2 Subtract(NoteY 0.2)
+            -0.2 Subtract(JudgeLinePosition 0.2)
+            -0.2 Add(JudgeLinePosition 0.2)
+            0.2 Add(JudgeLinePosition 0.2)
+            0.2 Subtract(JudgeLinePosition 0.2)
             2
             1
         )
@@ -220,9 +257,11 @@ TextureEffectCF:32006
 ClipEmpty:5
 
 
+
 // Particle Effect identifiers
 
 ParticleEffectTapNormalC:110006
+
 
 
 // Block identifiers
@@ -231,6 +270,8 @@ LevelMemory:0
 LevelData:1
 LevelOption:2
 LevelUI:5
+LevelBucket:6
+LevelScore:7
 
 EntityInfoArray:10
 
@@ -260,7 +301,6 @@ ScreenX2:Get(LevelMemory *ScreenX2)
 *Time:0
 *AspectRatio:2
 *DeviceInputOffset:4
-
 
 Time:Get(LevelData *Time)
 AspectRatio:Get(LevelData *AspectRatio)
@@ -296,6 +336,22 @@ NoteSpeed:Get(LevelOption *NoteSpeed)
 *UIHorizontalAlign:8
 *UIVerticalAlign:9
 *UIBackground:10
+
+
+
+// Level Score Layout
+
+*PerfectScoreMultiplier:0
+*GreatScoreMultiplier:1
+*GoodScoreMultiplier:2
+
+*ConsecutivePerfectScore:3
+*ConsecutiveGreatScore:6
+*ConsecutiveGoodScore:9
+
+*ConsecutiveScoreMultiplier:0
+*ConsecutiveScoreStep:1
+*ConsecutiveScoreCap:2
 
 
 
@@ -355,15 +411,13 @@ NoteTime:Get(EntityData *NoteTime)
 
 *NoteY:0
 *InputState:1
+
+NoteY:Get(EntityMemory *NoteY)
+InputState:Get(EntityMemory *InputState)
+
 *JudgeLinePosition:2
 *NoteTime1:3
 
-
-JudgeLinePosition:Get(EntityMemory *JudgeLinePosition)
-
 NoteTime1:Get(EntityMemory *NoteTime1)
 
-
-NoteY:Get(EntityMemory *NoteY)
-
-InputState:Get(EntityMemory *InputState)
+JudgeLinePosition:Get(EntityMemory *JudgeLinePosition)
