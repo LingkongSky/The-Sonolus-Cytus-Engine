@@ -1,3 +1,4 @@
+
 //Sonolus Cytus2 engine by sky_yousila
 
 #0.preprocess:Execute(
@@ -10,17 +11,6 @@ SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
     SetShifted(LevelUI *UIMenu *UIHeight 0.15)
     SetShifted(LevelUI *UIMenu *UIAlpha 0.6)
     SetShifted(LevelUI *UIMenu *UIBackground false)
-
-
-
-   //判定效果
-    SetShifted(LevelUI *UIJudgment *UIAnchorX 0)
-    SetShifted(LevelUI *UIJudgment *UIAnchorY 0)
-    SetShifted(LevelUI *UIJudgment *UIPivotX 0.0)
-    SetShifted(LevelUI *UIJudgment *UIPivotY 0.0)
-    SetShifted(LevelUI *UIJudgment *UIWidth 0.6)
-    SetShifted(LevelUI *UIJudgment *UIHeight 0.2)
-    SetShifted(LevelUI *UIJudgment *UIAlpha 1)
 
 
 //节奏数
@@ -85,8 +75,8 @@ SetShifted(LevelUI *UIMenu *UIAnchorX Subtract(0.05 AspectRatio))
 
 
 #0.updateSequential:Execute(
- 
-    Set(LevelMemory *NoteScreenTime Divide(5 NoteSpeed))
+ //音符速度
+    Set(LevelMemory *NoteScreenTime Divide(6.5 NoteSpeed))
 
     Set(LevelMemory *ScreenX1 Multiply(AspectRatio -1))
     Set(LevelMemory *ScreenX2 Multiply(AspectRatio 1))
@@ -137,7 +127,20 @@ Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2))
  
 
 
+
 #2.shouldSpawn:LessOr(Subtract(NoteTime Time) NoteScreenTime)
+
+#2.initialize:Execute(
+
+   If(
+Less(Mod(Add(Time 1) 2) 1)
+Set(EntityMemory *JudgeLinePosition Multiply(Add(Multiply(Mod(Add(Time 1) 2) 2) -1) 0.8)  )
+
+Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Add(Time 1) 2) 2)) 0.8)))
+    //初始化XY
+    Set(EntityMemory *NoteY JudgeLinePosition)
+    Set(EntityMemory *NoteX 0)
+)
 
 #2.touch:And(
    
@@ -165,10 +168,10 @@ Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2))
         // We spawn a particle effect
         SpawnParticleEffect(
             ParticleEffectTapNormalC
-            -0.4 -1
-            -0.4 -0.2
-            0.4 -0.2
-            0.4 -1
+      Subtract(NoteX NoteScale) Subtract(NoteY NoteScale)
+            Subtract(NoteX NoteScale) Add(NoteY NoteScale)
+            Add(NoteX NoteScale) Add(NoteY NoteScale)
+            Add(NoteX NoteScale) Subtract(NoteY NoteScale)
             0.3
             0
         )
@@ -178,11 +181,6 @@ Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2))
     )
 )
 
-// We draw note here
-// We use Or function here as a shorthand utilizing short circuit evaluation
-#2.updateParallel:Or(
-    // Check if InputState is Terminated
-    // If true then player must have tapped this note, we return true and despawn
     Equal(InputState Terminated)
 
     // Check if current time already past furthest GoodWindow
@@ -190,32 +188,26 @@ Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2))
     Greater(Subtract(Time DeviceInputOffset NoteTime) GoodWindow)
 
 
+#2.updateParallel:Or(
+    Equal(InputState Terminated)
+    Greater(Subtract(Time DeviceInputOffset NoteTime) GoodWindow)
     Execute(
-
-        Set(EntityMemory *NoteY 1)
-
-
-   If(
-Less(Mod(Time 2) 1)
-Set(EntityMemory *JudgeLinePosition Multiply(Add(Multiply(Mod(Time 2) 2) -1) 0.8)  )
-
-Set(EntityMemory *JudgeLinePosition Multiply(Subtract(3 Multiply(Mod(Time 2) 2)) 0.8)))
-
+    
+        //更生note大小
+          Set(EntityMemory *NoteScale If(GreaterOr(NoteScale 0.15) 0.15 Lerp(0.15 0 Divide(Subtract(NoteTime Add(Time 0.5)) NoteScreenTime))))
+        
         // note绘制
-
         Draw(
             TextureNote
-            -0.2 Subtract(JudgeLinePosition 0.2)
-            -0.2 Add(JudgeLinePosition 0.2)
-            0.2 Add(JudgeLinePosition 0.2)
-            0.2 Subtract(JudgeLinePosition 0.2)
+            Subtract(NoteX Multiply(NoteScale 1.3)) Subtract(NoteY Multiply(NoteScale 1.3))
+            Subtract(NoteX Multiply(NoteScale 1.3)) Add(NoteY Multiply(NoteScale 1.3))
+            Add(NoteX Multiply(NoteScale 1.3)) Add(NoteY Multiply(NoteScale 1.3))
+            Add(NoteX Multiply(NoteScale 1.3)) Subtract(NoteY Multiply(NoteScale 1.3))
             2
             1
         )
     )
 )
-
-
 
 // The following code are mostly boilerplate
 // Constants and getter functions so our main code is more readable
@@ -409,15 +401,21 @@ NoteTime:Get(EntityData *NoteTime)
 
 // #2 Memory Layout
 
-*NoteY:0
-*InputState:1
-
-NoteY:Get(EntityMemory *NoteY)
-InputState:Get(EntityMemory *InputState)
-
+*InputState:0
+*NoteY:1
 *JudgeLinePosition:2
 *NoteTime1:3
+*NoteScale:4
+*UIAnchorX1:5
+*UIAnchorY1:6
+*NoteX:7
 
+
+InputState:Get(EntityMemory *InputState)
+NoteY:Get(EntityMemory *NoteY)
+NoteX:Get(EntityMemory *NoteX)
 NoteTime1:Get(EntityMemory *NoteTime1)
-
 JudgeLinePosition:Get(EntityMemory *JudgeLinePosition)
+NoteScale:Get(EntityMemory *NoteScale)
+UIAnchorX1:Get(EntityMemory *UIAnchorX1)
+UIAnchorY1:Get(EntityMemory *UIAnchorY1)
